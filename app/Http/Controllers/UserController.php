@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+
+use Illuminate\Http\Response;
 use App\User;
 
 class UserController extends Controller
@@ -101,5 +103,117 @@ class UserController extends Controller
                 }
             }
         return response()->json($signup, 200);
+    }
+
+    public function update(Request $request)
+    {
+
+        //comprobar si el usuario esta ifntifivafo 
+
+        $token = $request->header('Authorization');
+        $jwtAuth = new \JwtAuth();
+        $checkToken = $jwtAuth->checkToken($token);
+
+        //recoger dtos por post
+        $json = $request->input('json', null);
+        $params_array = json_decode($json, true);
+
+        if ($checkToken && !empty($params_array)) {
+            //actualizar el usuario
+
+          
+
+            //sacar usuario identificaso
+            $user = $jwtAuth->checkToken($token, true);
+
+            //validar datos 
+            $validate = \Validator::make($params_array, [
+                'name' => 'required|alpha',
+                'surname' => 'required|alpha',
+                'email' => 'required|email|unique:users,'.$user->sub //comprobar si usuario esta duplicado
+                              
+            ]);
+
+
+            //quitar campos que no quiero acyualizar
+            unset($params_array['id']);
+            unset($params_array['role']);
+            unset($params_array['password']);
+            unset($params_array['created_at']);
+            unset($params_array['remember_token']);
+            //actualizar usuario en bd
+            $user_update=User::where('id', $user->sub)->update($params_array);
+
+            
+            //devolver  array con resultado)
+            $data = array(
+                'code' => 200,
+                'status' => 'success',
+                'user' => $user,
+                'changes' => $params_array 
+             );
+
+        }else{
+             $data = array(
+                'code' => 400,
+                'status' => 'error',
+                'message' => 'El usuario no esta identificado',
+             );
+        }
+        return response()->json($data, $data['code']);
+    }
+
+    public function upload(Request $request)
+    {
+
+        //recoger datos de la peticio
+        $image = $request->file('file0');
+
+        ///validacin de imaghen
+
+        $validate = \Validator::make($request->all(), [
+            'file0' => 'required|image|mimes:jpg,jpeg,png,gif'
+
+        ]);
+
+        //subir imagen
+        if (!$image || $validate->fails()) {
+            $data = array(
+                    'code' => 400,
+                    'status' => 'error',
+                    'message' => 'Error al subir imagen'
+            );
+        }else{
+            $image_name = time().$image->getClientOriginalName();
+             \Storage::disk('users')->put($image_name, \File::get($image));
+             $data = array(
+                'code' => 200,
+                'status' => 'success',
+                'image' => $image_name
+             );
+        }
+
+        //devolver el resultado
+
+        
+        return response()->json($data, $data['code']);
+    }
+
+    public function getImage($filename)
+    {
+        $isset = \Storage::disk('users')->exists($filename);
+        if ($isset) {
+            $file =  \Storage::disk('users')->get($filename);
+        return new Response($file,200);
+        }else{
+             $data = array(
+                'code' => 404,
+                'status' => 'error',
+                'message' => 'la imagen no existe'
+             );
+
+             return response()->json($data, $data['code']);
+        }
+        
     }
 }
