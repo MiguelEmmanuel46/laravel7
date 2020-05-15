@@ -19,7 +19,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/pruebas/{nombre?}', function($nombre=null){
+/*Route::get('/pruebas/{nombre?}', function($nombre=null){
 	
 	$texto='<h2>Texto desde eurata </h2>';
 	$texto .= 'Nombre '.$nombre;
@@ -39,7 +39,7 @@ Route::get('/caja/pruebas', 'CajaController@pruebas');
 Route::get('/dinero-diario/pruebas', 'DineroController@pruebas');
 Route::get('/inventario/pruebas', 'InventarioController@pruebas');
 Route::get('/usuario/pruebas', 'UserController@pruebas');
-Route::get('/ventas/pruebas', 'VentasController@pruebas');
+Route::get('/ventas/pruebas', 'VentasController@pruebas');*/
 
 
 
@@ -50,3 +50,10 @@ Route::put('/api/user/update', 'UserController@update');
 Route::post('/api/user/upload', 'UserController@upload')->middleware(ApiAuthMiddleware::class);
 Route::get('/api/user/avatar/{filename}', 'UserController@getImage');
 Route::get('/api/user/detail/{id}', 'UserController@detail');
+
+
+//Rutas controlador Inventario
+Route::resource('/api/inventario', 'InventarioController');
+
+//Rutas controlador ventas
+Route::resource('api/ventas', 'VentasController');

@@ -8,6 +8,8 @@ class Ventas extends Model
 {
     //
     protected $table='ventas';
+    protected $primaryKey = 'idventas';
+        const UPDATED_AT = null;
 
     public function user()
     {

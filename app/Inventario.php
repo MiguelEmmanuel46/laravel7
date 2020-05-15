@@ -8,6 +8,10 @@ class Inventario extends Model
 {
     //
     protected $table ='inventario';
+    protected $primaryKey = 'id_producto';
+    const UPDATED_AT = null;
+    const CREATED_AT = null;
+
 
     //muchos a uno
     
