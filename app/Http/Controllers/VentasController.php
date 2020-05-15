@@ -110,12 +110,9 @@ class VentasController extends Controller
     }
 
     public function update($id, Request $request)
-    {
-    	$user = $this->getIdentity($request);
-
+    {    	
     	$json = $request->input('json', null);
     	$params_array = json_decode($json, true);
-
     	if (!empty($params_array)) 
     	{
     		$validate =  \Validator::make($params_array, [
@@ -126,26 +123,37 @@ class VentasController extends Controller
     		]);
 
     		if ($validate->fails()) {
-    			return response()->json($validate->errors(), 400);
+    			$data = [
+    				'code' => 404,
+    				'errors' => $validate->errors()
+    			];
+    			die();
+    		}else{
+    			unset($params_array['idventas']);
+    			unset($params_array['created_at']);
+    			unset($params_array['id_usuario']);
+
+    			$user = $this->getIdentity($request);
+    			$ventas = Ventas::where('idventas',$id)->where('id_usuario', $user->sub)->first();
+    		
+    			if(!empty($ventas) && is_object($ventas)) 
+    			{
+    				$ventas->update($params_array);
+    				$data = array(
+	    				'code' => 200,
+    					'status' => 'success',
+    					'changes' => $params_array
+    				);
+				}else{
+					$data= [
+						'code' => 404,
+						'status' => 'error',
+						'mensaje' => 'ventas vaioc'
+					];
+				}
     		}
-    		unset($params_array['idventas']);
-    		unset($params_array['created_at']);
-    		unset($params_array['id_usuario']);
 
-    		
-    		
-    		$ventas_update=Ventas::where('idventas', $id)->where('id_usuario', $user->sub)->update($params_array);
-
-    		
-    		//devolver  array con resultado)
-    		$data = array(
-    		    'code' => 200,
-    		    'status' => 'success',
-    		    'venta actualizado' => $params_array
-    		 );
-
-    	}
-    	else{
+    	}else{
     		$data= [
     			'code' => 404,
     			'status' => 'error',
@@ -161,7 +169,9 @@ class VentasController extends Controller
     	$user = $this->getIdentity($request);
 
     	//conseguir post
-    	$ventas = Ventas::where('idventas',$id)->where('id_usuario', $user->sub)->first();
+    	$ventas = Ventas::where('idventas',$id)
+    					->where('id_usuario', $user->sub)
+    					->first();
 
     	if (!empty($ventas)) {
     		//borrarlo
@@ -194,4 +204,17 @@ class VentasController extends Controller
     	
     	return $user;
     }
+
+    public function getSalesByUser($id)
+    {
+    	//$user = $this->getIdentity($request);
+    	$ventas = Ventas::where('id_usuario', $id)->get();
+
+    	return response()->json([
+    		'status' => 'success',
+    		'ventas' => $ventas
+    	], 200);
+    }
+
+    
 }

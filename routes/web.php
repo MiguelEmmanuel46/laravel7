@@ -57,3 +57,4 @@ Route::resource('/api/inventario', 'InventarioController');
 
 //Rutas controlador ventas
 Route::resource('api/ventas', 'VentasController');
+Route::get('/api/ventas/usuario/{id}', 'VentasController@getSalesByUser');

@@ -11,6 +11,11 @@ class Ventas extends Model
     protected $primaryKey = 'idventas';
         const UPDATED_AT = null;
 
+    protected $fillable = [
+        'id_producto','cantidad','total','fecha'
+    ];
+
+
     public function user()
     {
     	return $this->belongsTo('App\User', 'id_usuario','id');
